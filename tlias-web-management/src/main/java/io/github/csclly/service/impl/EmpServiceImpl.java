@@ -4,10 +4,8 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import io.github.csclly.mapper.EmpExprMapper;
 import io.github.csclly.mapper.EmpMapper;
-import io.github.csclly.poji.Emp;
-import io.github.csclly.poji.EmpExpr;
-import io.github.csclly.poji.EmpQueryParam;
-import io.github.csclly.poji.PageResult;
+import io.github.csclly.poji.*;
+import io.github.csclly.service.EmpLogService;
 import io.github.csclly.service.EmpService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +24,8 @@ public class EmpServiceImpl implements EmpService {
     private EmpMapper empMapper;
     @Autowired
     private EmpExprMapper empExprMapper;
+    @Autowired
+    private EmpLogService empLogService;
 
 //    @Override
 //    public PageResult<Emp> page(Integer page, Integer pagesize) {
@@ -49,21 +49,28 @@ public class EmpServiceImpl implements EmpService {
         return new PageResult<Emp>(p.getTotal(), p.getResult());
     }
 
-    @Transactional
+    @Transactional(rollbackFor = {Exception.class})
     @Override
     public void save(Emp emp) {
-        emp.setCreateTime(LocalDateTime.now());
-        emp.setUpdateTime(LocalDateTime.now());
-        empMapper.insert(emp);
+        try {
+            emp.setCreateTime(LocalDateTime.now());
+            emp.setUpdateTime(LocalDateTime.now());
+            empMapper.insert(emp);
 
 
-        List<EmpExpr> exprList = emp.getExprList();
-        if (!CollectionUtils.isEmpty(exprList)){
-            exprList.forEach(empExpr -> {
-                empExpr.setEmpId(emp.getId());
-            });
-            empExprMapper.insertBatch(exprList);
+            List<EmpExpr> exprList = emp.getExprList();
+            if (!CollectionUtils.isEmpty(exprList)){
+                exprList.forEach(empExpr -> {
+                    empExpr.setEmpId(emp.getId());
+                });
+                empExprMapper.insertBatch(exprList);
+            }
+        } finally {
+            EmpLog empLog = new EmpLog(null, LocalDateTime.now(), "新增员工："+emp);
+            empLogService.insertLog(empLog);
         }
+
+
     }
 
 
