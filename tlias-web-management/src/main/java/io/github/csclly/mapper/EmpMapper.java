@@ -2,13 +2,12 @@ package io.github.csclly.mapper;
 
 import io.github.csclly.poji.Emp;
 import io.github.csclly.poji.EmpQueryParam;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Options;
-import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Mapper
 public interface EmpMapper {
@@ -37,4 +36,17 @@ public interface EmpMapper {
 
 
     void updateById(Emp emp);
+
+    @MapKey("pos")
+    List<Map<String, Object>> countEmpJobData();
+
+    @MapKey("name")
+    List<Map<String, Object>> countEmpGenderData();
+
+
+    @Select("select * from emp")
+    List<Emp> findAll();
+
+    @Select("select count(*) from emp where dept_id = #{id}")
+    Integer countById(Integer id);
 }

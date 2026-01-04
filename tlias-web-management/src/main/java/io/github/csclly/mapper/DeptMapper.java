@@ -26,4 +26,5 @@ public interface DeptMapper {
 
     @Update("update dept set name = #{name}, update_time = #{updateTime} where id = #{id}")
     void update(Dept dept);
+
 }
